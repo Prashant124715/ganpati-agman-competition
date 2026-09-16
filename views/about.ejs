@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container prose">
+    <h1 class="section-title">About <%= site.clubName %></h1>
+    <p><%= site.aboutClub %></p>
+    <p>Have questions about <%= site.competitionName %>? Reach out to any <%= site.clubName %> core-team member on campus.</p>
+    <div class="hero__actions">
+      <a href="/submit" class="btn btn-primary">Submit Your Entry</a>
+      <a href="/guidelines" class="btn btn-outline">Read Guidelines</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

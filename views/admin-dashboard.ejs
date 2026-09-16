@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="admin-shell">
+  <div class="container">
+    <div class="admin-topbar">
+      <div>
+        <h1 style="margin-bottom:2px;">Admin Dashboard</h1>
+        <p class="muted" style="margin:0;">Signed in as <%= admin.name %> (<%= admin.email %>)</p>
+      </div>
+      <div class="row-actions">
+        <a href="/admin/export.csv" class="btn btn-secondary btn-small">Export CSV</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-outline btn-small">Log Out</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="statGrid" class="stat-grid"></div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn is-active" data-tab="submissions">Submissions</button>
+      <button type="button" class="tab-btn" data-tab="categories">Category Stats</button>
+      <button type="button" class="tab-btn" data-tab="devmail">Dev Mail Outbox</button>
+    </div>
+
+    <!-- SUBMISSIONS TAB -->
+    <div id="tab-submissions" class="tab-panel">
+      <div class="admin-filters">
+        <select id="filterCategory">
+          <option value="all">All categories</option>
+          <% categories.forEach(c => { %><option value="<%= c.key %>"><%= c.label %></option><% }) %>
+        </select>
+        <select id="filterStatus">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <input type="text" id="searchBox" placeholder="Search name, college ID, submission ID, email…" style="min-width:240px;" />
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Category</th><th>Participant</th><th>Title</th>
+              <th>Files</th><th>Status</th><th>Votes</th><th>Submitted</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissionsBody">
+            <tr><td colspan="9" class="center muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- CATEGORY STATS TAB -->
+    <div id="tab-categories" class="tab-panel" style="display:none;">
+      <div class="form-card" style="max-width:640px;">
+        <h3>Category-wise Statistics</h3>
+        <div id="categoryStats"><p class="muted">Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- DEV MAIL TAB -->
+    <div id="tab-devmail" class="tab-panel" style="display:none;">
+      <div class="alert alert-info">
+        These are OTP emails that were <strong>not</strong> actually sent because SMTP isn't configured yet
+        (see .env.example). Use this to test the voting flow before real email is set up.
+      </div>
+      <div id="devMailList"></div>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
+<script src="/js/admin.js"></script>

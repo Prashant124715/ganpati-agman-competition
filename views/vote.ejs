@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<% if (pastDeadline) { %>
+  <div class="deadline-banner">Voting for <%= site.competitionName %> has closed. Thank you to everyone who took part!</div>
+<% } %>
+
+<section class="section">
+  <div class="container">
+    <h1 class="section-title">Vote</h1>
+    <p class="section-subtitle">Browse approved entries below. Verify your college email once, then vote for your favourite in each category.</p>
+
+    <div id="voterPanel" class="voter-panel <%= verifiedEmail ? 'is-verified' : '' %>">
+      <% if (verifiedEmail) { %>
+        <p style="margin:0;">✅ Voting as <strong><%= verifiedEmail %></strong></p>
+        <button type="button" id="voterLogoutBtn" class="btn btn-outline btn-small" style="margin-top:10px;">Not you? Switch email</button>
+      <% } else { %>
+        <div id="otpStepEmail">
+          <label for="voterEmail" style="display:block; font-weight:600; margin-bottom:8px;">Verify your college email to vote</label>
+          <div class="otp-row">
+            <input type="email" id="voterEmail" placeholder="you@yourcollege.edu" />
+            <button type="button" id="requestOtpBtn" class="btn btn-primary btn-small">Send Code</button>
+          </div>
+          <p class="hint" id="otpEmailMsg"></p>
+        </div>
+        <div id="otpStepCode" style="display:none; margin-top:14px;">
+          <label for="voterCode" style="display:block; font-weight:600; margin-bottom:8px;">Enter the 6-digit code we sent you</label>
+          <div class="otp-row">
+            <input type="text" id="voterCode" inputmode="numeric" maxlength="6" placeholder="123456" />
+            <button type="button" id="verifyOtpBtn" class="btn btn-primary btn-small">Verify</button>
+          </div>
+          <p class="hint" id="otpCodeMsg"></p>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="vote-toolbar">
+      <a href="/vote?category=all" class="pill <%= categoryFilter === 'all' ? 'is-active' : '' %>">All</a>
+      <% categories.forEach(c => { %>
+        <a href="/vote?category=<%= c.key %>" class="pill <%= categoryFilter === c.key ? 'is-active' : '' %>"><%= c.label %></a>
+      <% }) %>
+    </div>
+
+    <% if (!submissions.length) { %>
+      <p class="center muted">No approved entries in this category yet — check back soon!</p>
+    <% } %>
+
+    <div class="entry-grid">
+      <% submissions.forEach(s => { %>
+        <%
+          const firstFile = s.file_paths[0];
+          const ext = firstFile ? firstFile.originalName.split('.').pop().toLowerCase() : '';
+          const isImage = ['jpg','jpeg','png','webp'].includes(ext);
+          const isVideo = ['mp4','mov','webm'].includes(ext);
+          const isPdf = ext === 'pdf';
+          const alreadyVotedThisCategory = votedCategories.includes(s.category);
+          const alreadyVotedThisEntry = votedSubmissionIds.includes(s.id);
+          const categoryLabel = (categories.find(c => c.key === s.category) || {}).label || s.category;
+        %>
+        <div class="entry-card" data-submission-id="<%= s.id %>" data-category="<%= s.category %>">
+          <div class="entry-card__media">
+            <% if (isImage) { %>
+              <img src="<%= firstFile.path %>" alt="<%= s.title %>" data-lightbox loading="lazy" />
+            <% } else if (isVideo) { %>
+              <video controls preload="none" src="<%= firstFile.path %>"></video>
+            <% } else if (isPdf) { %>
+              <div class="doc-preview">
+                <p>📄 PDF entry</p>
+                <a href="<%= firstFile.path %>" target="_blank" rel="noopener" class="btn btn-small btn-secondary">View PDF</a>
+              </div>
+            <% } else { %>
+              <div class="doc-preview"><p>File attached</p></div>
+            <% } %>
+          </div>
+          <% if (s.file_paths.length > 1) { %>
+            <div style="display:flex; gap:6px; padding:8px 12px 0;">
+              <% s.file_paths.slice(1).forEach(f => { %>
+                <% const fext = f.originalName.split('.').pop().toLowerCase(); %>
+                <% if (['jpg','jpeg','png','webp'].includes(fext)) { %>
+                  <img src="<%= f.path %>" data-lightbox alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;" />
+                <% } %>
+              <% }) %>
+            </div>
+          <% } %>
+          <div class="entry-card__body">
+            <span class="entry-card__category"><%= categoryLabel %></span>
+            <h3 class="entry-card__title"><%= s.title %></h3>
+            <% if (s.description) { %><p class="entry-card__desc"><%= s.description %></p><% } %>
+            <div class="entry-card__footer">
+              <% if (site.showVoteCountsPublicly) { %>
+                <span class="vote-count"><%= voteCounts[s.id] || 0 %> votes</span>
+              <% } else { %>
+                <span></span>
+              <% } %>
+              <button
+                type="button"
+                class="btn btn-small vote-btn <%= alreadyVotedThisEntry ? 'btn-gold' : 'btn-primary' %>"
+                data-id="<%= s.id %>"
+                <%= (pastDeadline || alreadyVotedThisCategory) ? 'disabled' : '' %>
+              ><%= alreadyVotedThisEntry ? 'Voted ✓' : (alreadyVotedThisCategory ? 'Voted in category' : 'Vote') %></button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+      <div class="pagination">
+        <% for (let p = 1; p <= totalPages; p++) { %>
+          <a href="/vote?category=<%= categoryFilter %>&page=<%= p %>" class="btn btn-small <%= p === page ? 'btn-gold' : 'btn-outline' %>"><%= p %></a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
+<script src="/js/vote.js"></script>

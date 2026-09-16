@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container">
+    <h1 class="section-title">Guidelines</h1>
+
+    <div class="info-strip">
+      <div><strong>Submission deadline</strong><%= new Date(site.submissionDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
+      <div><strong>Voting closes</strong><%= new Date(site.votingDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
+      <div><strong>Current voting rule</strong>One vote per voter, per category</div>
+    </div>
+
+    <div class="prose">
+      <h2>Competition Categories</h2>
+      <ul>
+        <% site.categories.forEach(cat => { %>
+          <li><strong><%= cat.label %>:</strong> <%= cat.description %> Accepted formats: <%= cat.allowedExt.join(', ').toUpperCase() %> (max <%= cat.maxFileSizeMB %>MB, up to <%= cat.maxFiles %> file<%= cat.maxFiles > 1 ? 's' : '' %>).</li>
+        <% }) %>
+      </ul>
+
+      <h2>Who Can Participate</h2>
+      <p><%= site.guidelines.whoCanParticipate %></p>
+
+      <h2>Submission Rules</h2>
+      <ul>
+        <% site.guidelines.submissionRules.forEach(rule => { %><li><%= rule %></li><% }) %>
+      </ul>
+
+      <h2>Voting Rules</h2>
+      <ul>
+        <% site.guidelines.votingRules.forEach(rule => { %><li><%= rule %></li><% }) %>
+      </ul>
+
+      <h2>General Instructions</h2>
+      <ul>
+        <% site.guidelines.generalInstructions.forEach(rule => { %><li><%= rule %></li><% }) %>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

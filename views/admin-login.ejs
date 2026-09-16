@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container">
+    <h1 class="section-title">Admin Login</h1>
+    <p class="section-subtitle">For Marathi Club core-team members only.</p>
+
+    <div class="form-card">
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/admin/login">
+        <input type="hidden" name="next" value="<%= next %>" />
+        <div class="field">
+          <label for="email">Admin Email</label>
+          <input type="email" id="email" name="email" required autofocus />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="text" id="password" name="password" required style="font-family: monospace;" onfocus="this.type='password'" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

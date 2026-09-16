@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="hero">
+  <svg class="hero__motif" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#C08A2E" stroke-width="1.2" opacity="0.5">
+      <circle cx="100" cy="60" r="26"/>
+      <circle cx="100" cy="60" r="14"/>
+      <path d="M100 34 v52 M74 60 h52 M82 42 l36 36 M118 42 l-36 36"/>
+    </g>
+    <g fill="none" stroke="#1F5C58" stroke-width="1.2" opacity="0.4">
+      <circle cx="1100" cy="220" r="30"/>
+      <circle cx="1100" cy="220" r="16"/>
+      <path d="M1100 190 v60 M1070 220 h60 M1079 199 l42 42 M1121 199 l-42 42"/>
+    </g>
+  </svg>
+
+  <div class="container">
+    <p class="hero__eyebrow"><%= site.competitionName %> च्या हार्दिक शुभेच्छा!</p>
+    <h1 class="hero__title">गणपती बाप्पा मोरया!</h1>
+    <p class="hero__subtitle">
+      Celebrate Ganesh Chaturthi with the <%= site.clubName %> — share your Ganpati decor, reels,
+      writing, and creativity with the whole college, and vote for your favourites.
+    </p>
+    <div class="hero__actions">
+      <a href="/submit" class="btn btn-primary">Submit Your Entry</a>
+      <a href="/vote" class="btn btn-secondary">Vote Now</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Four ways to celebrate</h2>
+    <p class="section-subtitle">Pick a category and share your Ganpati Agman spirit — every approved entry gets a place on the voting page.</p>
+
+    <div class="category-grid">
+      <% site.categories.forEach(cat => { %>
+        <div class="category-card cat-<%= cat.key %>">
+          <span class="category-card__count"><%= countByCategory[cat.key] || 0 %> entries so far</span>
+          <h3><%= cat.label %></h3>
+          <p><%= cat.description %></p>
+          <a href="/submit/<%= cat.key %>" class="btn btn-outline btn-small">Submit to <%= cat.shortLabel %></a>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="container center">
+    <h2 class="section-title">Already submitted?</h2>
+    <p class="section-subtitle">Browse approved entries and cast your vote — one vote per category, verified with your college email.</p>
+    <a href="/vote" class="btn btn-gold">Go to Voting Page</a>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
