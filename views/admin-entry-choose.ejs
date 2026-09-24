@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container">
+    <div class="admin-topbar" style="margin-bottom: 20px;">
+      <div>
+        <h1 class="section-title" style="margin-bottom:4px;">Add New Competition Entry</h1>
+        <p class="muted" style="margin:0;">Select a category to enter participant details and upload files.</p>
+      </div>
+      <div>
+        <a href="/admin" class="btn btn-outline btn-small">← Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="category-grid">
+      <% categories.forEach(cat => { %>
+        <div class="category-card cat-<%= cat.key %>">
+          <h3><%= cat.label %></h3>
+          <p><%= cat.description %></p>
+          <p class="muted" style="font-size:13px;">
+            <strong>Files:</strong> <%= cat.allowedExt.join(', ').toUpperCase() %> (max <%= cat.maxFileSizeMB %>MB, up to <%= cat.maxFiles %> file<%= cat.maxFiles > 1 ? 's' : '' %>)
+          </p>
+          <a href="/admin/entries/new/<%= cat.key %>" class="btn btn-primary btn-small">Add to <%= cat.shortLabel %></a>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

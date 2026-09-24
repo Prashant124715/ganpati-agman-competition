@@ -11,20 +11,20 @@
 
 module.exports = {
   // ---- Identity ----
-  collegeName: "Your College Name",
+  collegeName: "Don Bosco Institute of Technology, Mumbai",
   clubName: "Marathi Club",
   competitionName: "Ganpati Agman 2026",
 
   // Shown in the header. Replace the files at these paths with the real
   // logos (keep the same filenames, or update the paths below) — see
   // README.md "How to replace the logos".
-  collegeLogo: "/img/college-logo-placeholder.svg",
-  clubLogo: "/img/club-logo-placeholder.svg",
+  collegeLogo: "/img/college-logo.png",
+  clubLogo: "/img/marathi-club-logo.png",
 
   // ---- Dates ----
   // ISO format YYYY-MM-DDTHH:mm:ss (interpreted in server local time).
-  submissionDeadline: "2026-09-30T23:59:59",
-  votingDeadline: "2026-10-07T23:59:59",
+  submissionDeadline: "2026-09-26T23:59:59",
+  votingDeadline: "2026-09-29T23:59:59",
 
   // ---- Categories ----
   // key must never change once submissions exist (it's stored in the DB).
@@ -119,23 +119,27 @@ module.exports = {
   // ---- Guidelines page copy ----
   guidelines: {
     whoCanParticipate:
-      "All currently enrolled students and faculty members of the college. Home Decor, Reel Making and Literature are open to students and faculty; Faculty Corner is reserved for faculty members.",
+      "All currently enrolled students and faculty members of Don Bosco Institute of Technology, Mumbai are eligible to participate. Home Decor, Reel Making and Literature categories are open to everyone; Faculty Corner is exclusively for faculty members.",
     submissionRules: [
-      "One entry per person per category. Submit your best work — you can always contact the Marathi Club core team before the deadline if you need to correct a mistake.",
-      "Use your official college email address and college ID / employee ID when submitting.",
-      "Content must be original and created by the participant.",
-      "Submissions must be respectful and appropriate for a college audience.",
-      "All submissions are reviewed by the Marathi Club team before they appear publicly. This usually takes 1–2 days.",
+      "Entries are collected by the Marathi Club core team and published directly on the website.",
+      "Participants must provide their full name, official college email address, and college ID / employee ID along with their entry.",
+      "Each participant may submit one entry per category.",
+      "All content must be original work created by the participant — no copied or AI-generated content.",
+      "Entries must be respectful, appropriate for a college audience, and related to the Ganpati Agman theme.",
+      "Accepted file formats and size limits are displayed on the submission form for each category.",
     ],
     votingRules: [
-      "Voting is open to all students and faculty using their official college email.",
-      "You must verify your email with a one-time code before you can vote.",
-      "You may vote once per category (see current rule above) — you cannot change your vote once submitted.",
-      "Only approved entries are shown on the voting page.",
+      "Voting ends on 29th September 2026 at 11:59 PM — no votes will be accepted after this deadline.",
+      "Voting is open to all DBIT students and faculty using their official college email.",
+      "You must verify your email with a one-time code (OTP) before casting your vote.",
+      "You may vote for one entry per category — once submitted, your vote cannot be changed or withdrawn.",
+      "Results will be announced by the Marathi Club core team after the voting period ends.",
     ],
     generalInstructions: [
-      "Keep files within the size limits shown on the submission form for each category.",
-      "For technical issues, reach out to the Marathi Club core team.",
+      "Ensure your files are within the size limits shown for each category before submitting.",
+      "Use a stable internet connection when uploading large video files to avoid upload failures.",
+      "For any technical issues or queries, contact the Marathi Club core team.",
+      "By participating, you agree to the rules and the decisions of the organising committee.",
     ],
   },
 

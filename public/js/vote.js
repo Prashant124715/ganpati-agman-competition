@@ -112,9 +112,146 @@
     });
   }
 
+  function initCarousels() {
+    document.querySelectorAll("[data-carousel]").forEach((carousel) => {
+      const track = carousel.querySelector(".carousel__track");
+      const slides = carousel.querySelectorAll(".carousel__slide");
+      const prevBtn = carousel.querySelector(".carousel__arrow--prev");
+      const nextBtn = carousel.querySelector(".carousel__arrow--next");
+      const dots = carousel.querySelectorAll(".carousel__dot");
+      const counter = carousel.querySelector(".carousel__counter");
+      const total = slides.length;
+
+      if (!track || total <= 1) return;
+
+      let activeIndex = 0;
+
+      function goTo(index) {
+        if (index < 0) index = 0;
+        if (index >= total) index = total - 1;
+        activeIndex = index;
+
+        track.style.setProperty("--active", activeIndex);
+
+        dots.forEach((d, i) => {
+          d.classList.toggle("is-active", i === activeIndex);
+        });
+
+        if (counter) {
+          counter.textContent = `${activeIndex + 1} / ${total}`;
+        }
+
+        if (prevBtn) prevBtn.disabled = activeIndex === 0;
+        if (nextBtn) nextBtn.disabled = activeIndex === total - 1;
+      }
+
+      // Set initial state
+      goTo(0);
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          goTo(activeIndex - 1);
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          goTo(activeIndex + 1);
+        });
+      }
+
+      dots.forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const idx = parseInt(dot.dataset.index, 10);
+          if (!isNaN(idx)) goTo(idx);
+        });
+      });
+
+      // Touch Swiping (Instagram style)
+      let startX = 0;
+      let startY = 0;
+      let deltaX = 0;
+      let isSwiping = false;
+
+      carousel.addEventListener("touchstart", (e) => {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        deltaX = 0;
+        isSwiping = true;
+      }, { passive: true });
+
+      carousel.addEventListener("touchmove", (e) => {
+        if (!isSwiping || e.touches.length !== 1) return;
+        deltaX = e.touches[0].clientX - startX;
+      }, { passive: true });
+
+      carousel.addEventListener("touchend", () => {
+        if (!isSwiping) return;
+        isSwiping = false;
+        const threshold = 35; // px threshold for swipe trigger
+        if (deltaX < -threshold) {
+          goTo(activeIndex + 1);
+        } else if (deltaX > threshold) {
+          goTo(activeIndex - 1);
+        }
+      });
+    });
+  }
+
+  function wireVideoModal() {
+    const modal   = el("videoModal");
+    const player  = el("videoModalPlayer");
+    const closeBtn = el("videoModalClose");
+    const titleEl = el("videoModalTitle");
+    if (!modal || !player) return;
+
+    function openModal(src, title) {
+      player.src = src;
+      titleEl.textContent = title || "";
+      modal.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      player.play().catch(() => {}); // autoplay may be blocked — that's fine
+    }
+
+    function closeModal() {
+      modal.classList.remove("is-open");
+      document.body.style.overflow = "";
+      player.pause();
+      player.src = "";
+    }
+
+    // Wire every play button
+    document.querySelectorAll("[data-video-wrap]").forEach((wrap) => {
+      const video = wrap.querySelector("video");
+      const btn   = wrap.querySelector(".video-play-btn");
+      if (!video || !btn) return;
+      btn.addEventListener("click", () => {
+        openModal(video.src || video.currentSrc, wrap.closest(".entry-card")?.querySelector(".entry-card__title")?.textContent || "");
+      });
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+
+    // Click outside inner box → close
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     wireOtpFlow();
     wireLogout();
     wireVoteButtons();
+    initCarousels();
+    wireVideoModal();
   });
 })();

@@ -13,7 +13,7 @@
 <section class="section">
   <div class="container">
     <h1 class="section-title">Vote</h1>
-    <p class="section-subtitle">Browse approved entries below. Verify your college email once, then vote for your favourite in each category.</p>
+    <p class="section-subtitle">Browse entries below. Verify your college email once, then vote for your favourite in each category.</p>
 
     <div id="voterPanel" class="voter-panel <%= verifiedEmail ? 'is-verified' : '' %>">
       <% if (verifiedEmail) { %>
@@ -23,7 +23,7 @@
         <div id="otpStepEmail">
           <label for="voterEmail" style="display:block; font-weight:600; margin-bottom:8px;">Verify your college email to vote</label>
           <div class="otp-row">
-            <input type="email" id="voterEmail" placeholder="you@yourcollege.edu" />
+            <input type="email" id="voterEmail" placeholder="you@dbit.in" />
             <button type="button" id="requestOtpBtn" class="btn btn-primary btn-small">Send Code</button>
           </div>
           <p class="hint" id="otpEmailMsg"></p>
@@ -47,7 +47,7 @@
     </div>
 
     <% if (!submissions.length) { %>
-      <p class="center muted">No approved entries in this category yet — check back soon!</p>
+      <p class="center muted">No entries in this category yet — check back soon!</p>
     <% } %>
 
     <div class="entry-grid">
@@ -55,19 +55,50 @@
         <%
           const firstFile = s.file_paths[0];
           const ext = firstFile ? firstFile.originalName.split('.').pop().toLowerCase() : '';
-          const isImage = ['jpg','jpeg','png','webp'].includes(ext);
           const isVideo = ['mp4','mov','webm'].includes(ext);
           const isPdf = ext === 'pdf';
+
+          const allFilesAreImages = s.file_paths.length > 1 && s.file_paths.every(f => {
+            const fext = f.originalName.split('.').pop().toLowerCase();
+            return ['jpg','jpeg','png','webp'].includes(fext);
+          });
+          const isCarousel = s.file_paths.length > 1 && allFilesAreImages;
+          const isImage = ['jpg','jpeg','png','webp'].includes(ext);
+
           const alreadyVotedThisCategory = votedCategories.includes(s.category);
           const alreadyVotedThisEntry = votedSubmissionIds.includes(s.id);
           const categoryLabel = (categories.find(c => c.key === s.category) || {}).label || s.category;
         %>
         <div class="entry-card" data-submission-id="<%= s.id %>" data-category="<%= s.category %>">
           <div class="entry-card__media">
-            <% if (isImage) { %>
-              <img src="<%= firstFile.path %>" alt="<%= s.title %>" data-lightbox loading="lazy" />
+            <% if (isCarousel) { %>
+              <div class="carousel" data-carousel>
+                <div class="carousel__track">
+                  <% s.file_paths.forEach(f => { %>
+                    <div class="carousel__slide">
+                      <img src="<%= f.path %>" data-lightbox alt="<%= s.title %>" loading="lazy" decoding="async" />
+                    </div>
+                  <% }) %>
+                </div>
+                <button type="button" class="carousel__arrow carousel__arrow--prev" aria-label="Previous image">‹</button>
+                <button type="button" class="carousel__arrow carousel__arrow--next" aria-label="Next image">›</button>
+                <div class="carousel__dots">
+                  <% s.file_paths.forEach((f, idx) => { %>
+                    <button type="button" class="carousel__dot <%= idx === 0 ? 'is-active' : '' %>" data-index="<%= idx %>" aria-label="Go to image <%= idx + 1 %>"></button>
+                  <% }) %>
+                </div>
+                <span class="carousel__counter">1 / <%= s.file_paths.length %></span>
+              </div>
+            <% } else if (isImage) { %>
+              <img src="<%= firstFile.path %>" alt="<%= s.title %>" data-lightbox loading="lazy" decoding="async" />
             <% } else if (isVideo) { %>
-              <video controls preload="none" src="<%= firstFile.path %>"></video>
+              <div class="video-fullscreen-wrap" data-video-wrap>
+                <video preload="metadata" src="<%= firstFile.path %>" class="card-video"></video>
+                <button type="button" class="video-play-btn" aria-label="Play in full screen">
+                  <span class="video-play-btn__icon">▶</span>
+                  <span class="video-play-btn__label">Tap to watch</span>
+                </button>
+              </div>
             <% } else if (isPdf) { %>
               <div class="doc-preview">
                 <p>📄 PDF entry</p>
@@ -77,12 +108,12 @@
               <div class="doc-preview"><p>File attached</p></div>
             <% } %>
           </div>
-          <% if (s.file_paths.length > 1) { %>
+          <% if (!isCarousel && s.file_paths.length > 1) { %>
             <div style="display:flex; gap:6px; padding:8px 12px 0;">
               <% s.file_paths.slice(1).forEach(f => { %>
                 <% const fext = f.originalName.split('.').pop().toLowerCase(); %>
                 <% if (['jpg','jpeg','png','webp'].includes(fext)) { %>
-                  <img src="<%= f.path %>" data-lightbox alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;" />
+                  <img src="<%= f.path %>" data-lightbox alt="" loading="lazy" decoding="async" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;" />
                 <% } %>
               <% }) %>
             </div>
@@ -120,4 +151,14 @@
 </section>
 
 <%- include('partials/footer') %>
-<script src="/js/vote.js"></script>
+
+<!-- Video fullscreen modal -->
+<div class="video-modal" id="videoModal" role="dialog" aria-modal="true" aria-label="Video player">
+  <div class="video-modal__inner">
+    <button type="button" class="video-modal__close" id="videoModalClose" aria-label="Close video">✕</button>
+    <video class="video-modal__player" id="videoModalPlayer" controls playsinline></video>
+    <p class="video-modal__title" id="videoModalTitle"></p>
+  </div>
+</div>
+
+<script src="/js/vote.js" defer></script>

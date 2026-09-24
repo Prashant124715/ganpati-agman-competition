@@ -3,41 +3,62 @@
 <head>
 <%- include('partials/head') %>
 </head>
-<body>
+<body class="home-page">
+<!-- Mouse-following golden glow spotlight -->
+<div id="mouseGlow" class="mouse-glow" aria-hidden="true"></div>
+
 <%- include('partials/header') %>
 
-<section class="hero">
-  <svg class="hero__motif" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <g fill="none" stroke="#C08A2E" stroke-width="1.2" opacity="0.5">
-      <circle cx="100" cy="60" r="26"/>
-      <circle cx="100" cy="60" r="14"/>
-      <path d="M100 34 v52 M74 60 h52 M82 42 l36 36 M118 42 l-36 36"/>
-    </g>
-    <g fill="none" stroke="#1F5C58" stroke-width="1.2" opacity="0.4">
-      <circle cx="1100" cy="220" r="30"/>
-      <circle cx="1100" cy="220" r="16"/>
-      <path d="M1100 190 v60 M1070 220 h60 M1079 199 l42 42 M1121 199 l-42 42"/>
-    </g>
-  </svg>
+<!-- 3D HERO SECTION -->
+<section id="hero3dContainer" class="hero-3d">
+  <!-- Three.js WebGL Particle Canvas -->
+  <div id="hero3dCanvas" class="hero-3d__canvas" aria-hidden="true"></div>
 
-  <div class="container">
-    <p class="hero__eyebrow"><%= site.competitionName %> च्या हार्दिक शुभेच्छा!</p>
-    <h1 class="hero__title">गणपती बाप्पा मोरया!</h1>
-    <p class="hero__subtitle">
-      Celebrate Ganesh Chaturthi with the <%= site.clubName %> — share your Ganpati decor, reels,
-      writing, and creativity with the whole college, and vote for your favourites.
-    </p>
-    <div class="hero__actions">
-      <a href="/submit" class="btn btn-primary">Submit Your Entry</a>
-      <a href="/vote" class="btn btn-secondary">Vote Now</a>
+  <div class="container hero-3d__layout">
+    <!-- Left / Top: Marathi Typography & Glassmorphism Content -->
+    <div class="hero-3d__content">
+      <div class="hero-3d__badge">
+        <span><%= site.competitionName %> च्या हार्दिक शुभेच्छा!</span>
+      </div>
+      <h1 class="hero-3d__title">मराठी क्लब</h1>
+      <p class="hero-3d__tagline">भाषा • संस्कृती • परंपरा • आपलेपणा</p>
+      <p class="hero-3d__description">
+        मराठी भाषा, संस्कृती आणि परंपरेचा उत्सव साजरा करणाऱ्या आपल्या परिवारात आपले स्वागत आहे.
+      </p>
+
+      <div class="hero-3d__actions">
+        <a href="/about" class="btn btn-glass btn-glass-primary">
+          <span>आमच्याबद्दल</span>
+        </a>
+        <a href="/competitions" class="btn btn-glass btn-glass-gold">
+          <span>कार्यक्रम पहा</span>
+        </a>
+        <a href="/vote" class="btn btn-glass btn-glass-outline">
+          <span>Vote Now</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right / Main Visual Centerpiece: Interactive 3D Artwork Card -->
+    <div class="hero-3d__art-wrap">
+      <div id="hero3dCard" class="hero-3d__card">
+        <div class="hero-3d__art-overlay" aria-hidden="true"></div>
+        <img src="/img/landing-page.png" alt="Marathi Club Visual Artwork" class="hero-3d__art-img" width="460" height="460" fetchpriority="high" decoding="async" />
+      </div>
     </div>
   </div>
+
+  <!-- Scroll Down Indicator -->
+  <a href="#explore" class="hero-3d__scroll-down" aria-label="Scroll to explore">
+    <span>Scroll to explore ↓</span>
+  </a>
 </section>
 
-<section class="section">
+<!-- CATEGORIES SECTION -->
+<section id="explore" class="section">
   <div class="container">
     <h2 class="section-title">Four ways to celebrate</h2>
-    <p class="section-subtitle">Pick a category and share your Ganpati Agman spirit — every approved entry gets a place on the voting page.</p>
+    <p class="section-subtitle">Explore entries across four categories and vote for your favourites.</p>
 
     <div class="category-grid">
       <% site.categories.forEach(cat => { %>
@@ -45,19 +66,23 @@
           <span class="category-card__count"><%= countByCategory[cat.key] || 0 %> entries so far</span>
           <h3><%= cat.label %></h3>
           <p><%= cat.description %></p>
-          <a href="/submit/<%= cat.key %>" class="btn btn-outline btn-small">Submit to <%= cat.shortLabel %></a>
+          <a href="/vote" class="btn btn-outline btn-small">View Entries & Vote</a>
         </div>
       <% }) %>
     </div>
   </div>
 </section>
 
+<!-- VOTING PORTAL CTA -->
 <section class="section" style="padding-top:0;">
   <div class="container center">
-    <h2 class="section-title">Already submitted?</h2>
-    <p class="section-subtitle">Browse approved entries and cast your vote — one vote per category, verified with your college email.</p>
-    <a href="/vote" class="btn btn-gold">Go to Voting Page</a>
+    <div class="form-card gold-cta-card">
+      <h2 class="section-title">Ready to vote?</h2>
+      <p class="section-subtitle">Browse entries and cast your vote — one vote per category, verified with your college email.</p>
+      <a href="/vote" class="btn btn-gold btn-large">Go to Voting Page</a>
+    </div>
   </div>
 </section>
 
 <%- include('partials/footer') %>
+<script src="/js/hero3d.js" defer></script>

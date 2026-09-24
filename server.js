@@ -8,7 +8,7 @@ require("./db/database"); // ensures schema exists before anything else runs
 const config = require("./config/site.config");
 const session = require("./lib/session");
 const pagesRouter = require("./routes/pages");
-const submissionsRouter = require("./routes/submissions");
+const adminEntriesRouter = require("./routes/adminEntries");
 const voteRouter = require("./routes/vote");
 const adminRouter = require("./routes/admin");
 
@@ -32,8 +32,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // meant to be shown publicly once approved — so no auth is required here.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Make site config (and admin login state, for the nav) available to every
-// view without passing it manually from each route.
+// Make site config and admin login state available to every view
 app.use((req, res, next) => {
   res.locals.site = config;
   res.locals.currentPath = req.path;
@@ -43,12 +42,13 @@ app.use((req, res, next) => {
 });
 
 app.use(pagesRouter);
-app.use(submissionsRouter);
+app.use(adminEntriesRouter);
 app.use(voteRouter);
 app.use(adminRouter);
 
 app.use((req, res) => {
   res.status(404).render("error", {
+    pageTitle: "Page not found",
     title: "Page not found",
     message: "The page you're looking for doesn't exist.",
   });
@@ -59,6 +59,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).render("error", {
+    pageTitle: "Something went wrong",
     title: "Something went wrong",
     message: "An unexpected error occurred. Please try again in a moment.",
   });

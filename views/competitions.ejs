@@ -16,8 +16,8 @@
         <div class="category-card cat-<%= cat.key %>">
           <h3><%= cat.label %></h3>
           <p><%= cat.description %></p>
-          <p class="muted"><strong>Accepted files:</strong> <%= cat.allowedExt.join(', ').toUpperCase() %> · up to <%= cat.maxFileSizeMB %>MB · max <%= cat.maxFiles %> file<%= cat.maxFiles > 1 ? 's' : '' %></p>
-          <a href="/submit/<%= cat.key %>" class="btn btn-secondary btn-small">Submit an Entry</a>
+          <p class="muted"><strong>Accepted files:</strong> <%= cat.allowedExt.join(', ').toUpperCase() %> · max <%= cat.maxFileSizeMB %>MB · max <%= cat.maxFiles %> <%= cat.maxFiles > 1 ? 'files' : 'file' %></p>
+          <a href="/vote" class="btn btn-secondary btn-small">View Entries & Vote</a>
         </div>
       <% }) %>
     </div>

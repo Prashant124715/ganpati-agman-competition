@@ -24,12 +24,12 @@ router.get("/vote", (req, res) => {
   const params = categoryFilter === "all" ? [] : [categoryFilter];
 
   const total = db
-    .prepare(`SELECT COUNT(*) as n FROM submissions WHERE status = 'approved' ${whereCategory}`)
+    .prepare(`SELECT COUNT(*) as n FROM submissions ${whereCategory ? 'WHERE ' + whereCategory.replace('AND ', '') : ''}`)
     .get(...params).n;
 
   const submissions = db
     .prepare(
-      `SELECT * FROM submissions WHERE status = 'approved' ${whereCategory}
+      `SELECT * FROM submissions ${whereCategory ? 'WHERE ' + whereCategory.replace('AND ', '') : ''}
        ORDER BY created_at DESC LIMIT ? OFFSET ?`
     )
     .all(...params, PAGE_SIZE, offset)
@@ -157,7 +157,7 @@ router.post("/vote/cast", requireVoter, (req, res) => {
 
   const submissionId = parseInt(req.body.submissionId, 10);
   const submission = db
-    .prepare(`SELECT * FROM submissions WHERE id = ? AND status = 'approved'`)
+    .prepare(`SELECT * FROM submissions WHERE id = ?`)
     .get(submissionId);
 
   if (!submission) {

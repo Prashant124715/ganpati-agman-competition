@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head') %>
+</head>
+<body>
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom: 20px;">
+      <a href="/admin/entries/new" class="muted" style="text-decoration:none; font-size:14px;">← Change category</a>
+    </div>
+
+    <div class="form-card">
+      <h2>Add Entry — <%= category.label %></h2>
+      <p class="muted" style="margin-bottom:20px;"><%= category.description %></p>
+
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error">
+          <ul style="margin:0; padding-left:20px;">
+            <% errors.forEach(err => { %><li><%= err %></li><% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <% if (duplicateWarning) { %>
+        <div class="alert alert-warning" style="background:#FFF3CD; border-color:#FFEBAA; color:#856404; padding:16px; margin-bottom:20px; border-radius:8px;">
+          <h4 style="margin:0 0 8px;">⚠️ Duplicate Entry Warning</h4>
+          <p style="margin:0 0 12px;"><%= duplicateWarning %></p>
+          <form method="POST" action="/admin/entries/new/<%= category.key %>" enctype="multipart/form-data" style="margin:0;">
+            <input type="hidden" name="name" value="<%= values.name || '' %>" />
+            <input type="hidden" name="email" value="<%= values.email || '' %>" />
+            <input type="hidden" name="title" value="<%= values.title || '' %>" />
+            <input type="hidden" name="description" value="<%= values.description || '' %>" />
+            <% if (category.audience === 'faculty-only') { %>
+              <input type="hidden" name="facultyConfirm" value="<%= values.facultyConfirm || '' %>" />
+            <% } %>
+            <input type="hidden" name="force" value="1" />
+            <p style="font-size:13px; color:#666; margin-bottom:10px;">Note: Re-upload the entry file(s) below to complete forced addition.</p>
+            <div class="field" style="margin-bottom:12px;">
+              <input type="file" name="files" multiple required />
+            </div>
+            <button type="submit" class="btn btn-warning btn-small" style="background:#856404; color:#fff; border:none;">Add Anyway (Force Duplicate)</button>
+          </form>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/admin/entries/new/<%= category.key %>" enctype="multipart/form-data" novalidate>
+        <div class="field">
+          <label for="name">Participant Full Name</label>
+          <input type="text" id="name" name="name" value="<%= values.name || '' %>" required />
+        </div>
+
+        <div class="field">
+          <label for="email"><%= category.audience === 'faculty-only' ? 'Official Faculty Email' : 'Participant Email Address' %></label>
+          <input type="email" id="email" name="email" value="<%= values.email || '' %>" required />
+        </div>
+
+        <div class="field">
+          <label for="title">Entry Title</label>
+          <input type="text" id="title" name="title" value="<%= values.title || '' %>" required />
+        </div>
+
+        <div class="field">
+          <label for="description">Description (optional)</label>
+          <textarea id="description" name="description" rows="3"><%= values.description || '' %></textarea>
+        </div>
+
+        <div class="field">
+          <label for="files">Upload File(s)</label>
+          <input type="file" id="files" name="files" multiple required />
+          <p class="hint">Allowed: <%= category.allowedExt.join(', ').toUpperCase() %> — up to <%= category.maxFileSizeMB %>MB each, max <%= category.maxFiles %> file<%= category.maxFiles > 1 ? 's' : '' %>.</p>
+        </div>
+
+        <% if (category.audience === 'faculty-only') { %>
+        <div class="field field-checkbox">
+          <input type="checkbox" id="facultyConfirm" name="facultyConfirm" <%= values.facultyConfirm === 'on' ? 'checked' : '' %> />
+          <label for="facultyConfirm">I confirm the participant is a faculty member of Don Bosco Institute of Technology, Mumbai.</label>
+        </div>
+        <% } %>
+
+        <button type="submit" class="btn btn-primary btn-block">Add Approved Entry</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

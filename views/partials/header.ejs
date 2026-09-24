@@ -1,29 +1,30 @@
 <header class="site-header">
   <div class="site-header__top">
-    <a class="brand brand--college" href="/">
-      <img src="<%= site.collegeLogo %>" alt="<%= site.collegeName %> logo" class="brand__logo" />
+    <a class="brand brand--college" href="/" aria-label="<%= site.collegeName %>">
+      <img src="<%= site.collegeLogo %>" alt="<%= site.collegeName %> logo" class="brand__logo" width="44" height="44" decoding="async" />
       <span class="brand__name"><%= site.collegeName %></span>
     </a>
 
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
 
-    <a class="brand brand--club" href="/about">
+    <a class="brand brand--club" href="/about" aria-label="<%= site.clubName %>">
       <span class="brand__name"><%= site.clubName %></span>
-      <img src="<%= site.clubLogo %>" alt="<%= site.clubName %> logo" class="brand__logo" />
+      <img src="<%= site.clubLogo %>" alt="<%= site.clubName %> logo" class="brand__logo" width="44" height="44" decoding="async" />
     </a>
   </div>
 
   <nav class="site-nav" id="siteNav">
     <a href="/" class="<%= currentPath === '/' ? 'is-active' : '' %>">Home</a>
     <a href="/competitions" class="<%= currentPath === '/competitions' ? 'is-active' : '' %>">Competitions</a>
-    <a href="/submit" class="<%= currentPath.startsWith('/submit') ? 'is-active' : '' %>">Submit Your Entry</a>
     <a href="/vote" class="<%= currentPath === '/vote' ? 'is-active' : '' %>">Vote</a>
     <a href="/guidelines" class="<%= currentPath === '/guidelines' ? 'is-active' : '' %>">Guidelines</a>
     <a href="/about" class="<%= currentPath === '/about' ? 'is-active' : '' %>">About Marathi Club</a>
     <% if (isAdminLoggedIn) { %>
       <a href="/admin" class="nav-admin-link <%= currentPath.startsWith('/admin') ? 'is-active' : '' %>">Admin Dashboard</a>
+    <% } else { %>
+      <a href="/admin/login" class="nav-admin-link <%= currentPath === '/admin/login' ? 'is-active' : '' %>">Admin Login</a>
     <% } %>
   </nav>
 </header>

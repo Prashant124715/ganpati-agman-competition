@@ -69,41 +69,22 @@ router.get("/admin", requireAdmin, (req, res) => {
 // ---------------- JSON API used by public/js/admin.js ----------------
 
 router.get("/admin/api/stats", requireAdmin, (req, res) => {
-  const totals = db
-    .prepare(
-      `SELECT
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-        SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
-        SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
-       FROM submissions`
-    )
-    .get();
-
+  const total = db.prepare(`SELECT COUNT(*) as n FROM submissions`).get().n;
   const totalVotes = db.prepare(`SELECT COUNT(*) as n FROM votes`).get().n;
 
   const byCategory = config.categories.map((c) => {
-    const row = db
-      .prepare(
-        `SELECT
-          COUNT(*) as total,
-          SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
-          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-          SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
-         FROM submissions WHERE category = ?`
-      )
-      .get(c.key);
-    const votes = db
-      .prepare(
-        `SELECT COUNT(*) as n FROM votes WHERE category = ?`
-      )
+    const count = db
+      .prepare(`SELECT COUNT(*) as n FROM submissions WHERE category = ?`)
       .get(c.key).n;
-    return { key: c.key, label: c.label, ...row, votes };
+    const votes = db
+      .prepare(`SELECT COUNT(*) as n FROM votes WHERE category = ?`)
+      .get(c.key).n;
+    return { key: c.key, label: c.label, total: count, votes };
   });
 
   res.json({
     ok: true,
-    totals: { ...totals, votes: totalVotes },
+    totals: { total, votes: totalVotes },
     byCategory,
   });
 });
@@ -152,25 +133,6 @@ router.get("/admin/api/submissions", requireAdmin, (req, res) => {
   });
 });
 
-router.post("/admin/api/submissions/:id/approve", requireAdmin, (req, res) => {
-  const result = db
-    .prepare(`UPDATE submissions SET status = 'approved', updated_at = datetime('now') WHERE id = ?`)
-    .run(req.params.id);
-  if (result.changes === 0) return res.status(404).json({ ok: false, error: "Not found." });
-  res.json({ ok: true });
-});
-
-router.post("/admin/api/submissions/:id/reject", requireAdmin, (req, res) => {
-  const note = (req.body && req.body.note) || null;
-  const result = db
-    .prepare(
-      `UPDATE submissions SET status = 'rejected', admin_note = ?, updated_at = datetime('now') WHERE id = ?`
-    )
-    .run(note, req.params.id);
-  if (result.changes === 0) return res.status(404).json({ ok: false, error: "Not found." });
-  res.json({ ok: true });
-});
-
 router.delete("/admin/api/submissions/:id", requireAdmin, (req, res) => {
   const submission = db.prepare(`SELECT * FROM submissions WHERE id = ?`).get(req.params.id);
   if (!submission) return res.status(404).json({ ok: false, error: "Not found." });
@@ -184,6 +146,33 @@ router.delete("/admin/api/submissions/:id", requireAdmin, (req, res) => {
   }
 
   db.prepare(`DELETE FROM submissions WHERE id = ?`).run(req.params.id);
+  res.json({ ok: true });
+});
+
+router.patch("/admin/api/submissions/:id", requireAdmin, (req, res) => {
+  const { name, college_id, email, title, description } = req.body || {};
+  if (!name || !name.trim() || !email || !email.trim() || !title || !title.trim()) {
+    return res.status(400).json({ ok: false, error: "Name, email, and title are required." });
+  }
+
+  const cleanCollegeId = (college_id || "").trim() || "N/A";
+
+  const result = db
+    .prepare(
+      `UPDATE submissions
+       SET name = ?, college_id = ?, email = ?, title = ?, description = ?, updated_at = datetime('now')
+       WHERE id = ?`
+    )
+    .run(
+      name.trim(),
+      cleanCollegeId,
+      email.trim().toLowerCase(),
+      title.trim(),
+      (description || "").trim(),
+      req.params.id
+    );
+
+  if (result.changes === 0) return res.status(404).json({ ok: false, error: "Submission not found." });
   res.json({ ok: true });
 });
 
@@ -218,7 +207,6 @@ router.get("/admin/export.csv", requireAdmin, (req, res) => {
     "email",
     "title",
     "description",
-    "status",
     "vote_count",
     "created_at",
   ];

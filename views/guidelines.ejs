@@ -11,23 +11,27 @@
     <h1 class="section-title">Guidelines</h1>
 
     <div class="info-strip">
-      <div><strong>Submission deadline</strong><%= new Date(site.submissionDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
-      <div><strong>Voting closes</strong><%= new Date(site.votingDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
-      <div><strong>Current voting rule</strong>One vote per voter, per category</div>
+      <div><strong>Submission deadline: </strong><%= new Date(site.submissionDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
+      <div><strong>Voting closes: </strong><%= new Date(site.votingDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
+      <div><strong>Current voting rule: </strong>One vote per voter, per category</div>
     </div>
 
     <div class="prose">
       <h2>Competition Categories</h2>
       <ul>
         <% site.categories.forEach(cat => { %>
-          <li><strong><%= cat.label %>:</strong> <%= cat.description %> Accepted formats: <%= cat.allowedExt.join(', ').toUpperCase() %> (max <%= cat.maxFileSizeMB %>MB, up to <%= cat.maxFiles %> file<%= cat.maxFiles > 1 ? 's' : '' %>).</li>
+          <li><strong><%= cat.label %>:</strong> <%= cat.description %></li>
         <% }) %>
       </ul>
 
       <h2>Who Can Participate</h2>
       <p><%= site.guidelines.whoCanParticipate %></p>
 
-      <h2>Submission Rules</h2>
+      <div class="alert alert-info" style="margin:24px 0 16px;">
+        <strong>Entry Collection:</strong> Competition entries are collected directly by the Marathi Club core team and published on the portal.
+      </div>
+
+      <h2>Entry & Review Guidelines</h2>
       <ul>
         <% site.guidelines.submissionRules.forEach(rule => { %><li><%= rule %></li><% }) %>
       </ul>

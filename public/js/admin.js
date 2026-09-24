@@ -1,6 +1,7 @@
 (() => {
-  const state = { category: "all", status: "all", q: "", page: 1 };
+  const state = { category: "all", q: "", page: 1 };
   let searchDebounce = null;
+  let currentSubmissions = [];
 
   const el = (id) => document.getElementById(id);
 
@@ -12,8 +13,6 @@
 
   function fmtDate(iso) {
     try {
-      // SQLite's datetime('now') returns "YYYY-MM-DD HH:MM:SS" (UTC, space
-      // separator) — normalize to a real ISO string before parsing.
       const isoNormalized = String(iso).replace(" ", "T") + "Z";
       return new Date(isoNormalized).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
     } catch {
@@ -27,10 +26,7 @@
     if (!data.ok) return;
 
     el("statGrid").innerHTML = `
-      <div class="stat-card"><div class="n">${data.totals.total || 0}</div><div class="l">Total Submissions</div></div>
-      <div class="stat-card"><div class="n">${data.totals.pending || 0}</div><div class="l">Pending</div></div>
-      <div class="stat-card"><div class="n">${data.totals.approved || 0}</div><div class="l">Approved</div></div>
-      <div class="stat-card"><div class="n">${data.totals.rejected || 0}</div><div class="l">Rejected</div></div>
+      <div class="stat-card"><div class="n">${data.totals.total || 0}</div><div class="l">Total Entries</div></div>
       <div class="stat-card"><div class="n">${data.totals.votes || 0}</div><div class="l">Total Votes</div></div>
     `;
 
@@ -39,7 +35,7 @@
         (c) => `
         <div class="category-stat-row">
           <span><strong>${escapeHtml(c.label)}</strong></span>
-          <span class="muted">${c.total} total · ${c.approved} approved · ${c.pending} pending · ${c.rejected} rejected · ${c.votes} votes</span>
+          <span class="muted">${c.total} entries · ${c.votes} votes</span>
         </div>`
       )
       .join("") || `<p class="muted">No data yet.</p>`;
@@ -52,14 +48,10 @@
       .join("")}</div>`;
   }
 
-  function badge(status) {
-    return `<span class="badge badge-${status}">${status}</span>`;
-  }
 
   async function loadSubmissions() {
     const params = new URLSearchParams({
       category: state.category,
-      status: state.status,
       q: state.q,
       page: state.page,
     });
@@ -67,9 +59,10 @@
     const data = await res.json();
     if (!data.ok) return;
 
+    currentSubmissions = data.submissions || [];
     const body = el("submissionsBody");
     if (!data.submissions.length) {
-      body.innerHTML = `<tr><td colspan="9" class="center muted">No submissions match these filters.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="center muted">No submissions match these filters.</td></tr>`;
     } else {
       body.innerHTML = data.submissions
         .map(
@@ -80,13 +73,11 @@
           <td>${escapeHtml(s.name)}<br/><span class="muted">${escapeHtml(s.college_id)}<br/>${escapeHtml(s.email)}</span></td>
           <td>${escapeHtml(s.title)}<br/><span class="muted">${escapeHtml(s.description || "")}</span></td>
           <td>${renderFileLinks(s.file_paths)}</td>
-          <td>${badge(s.status)}${s.admin_note ? `<br/><span class="muted">${escapeHtml(s.admin_note)}</span>` : ""}</td>
           <td>${s.vote_count}</td>
           <td>${fmtDate(s.created_at)}</td>
           <td>
             <div class="row-actions">
-              <button class="btn btn-small btn-secondary" data-action="approve" data-id="${s.id}" ${s.status === "approved" ? "disabled" : ""}>Approve</button>
-              <button class="btn btn-small btn-outline" data-action="reject" data-id="${s.id}" ${s.status === "rejected" ? "disabled" : ""}>Reject</button>
+              <button class="btn btn-small btn-outline" data-action="edit" data-id="${s.id}">Edit</button>
               <button class="btn btn-small btn-danger" data-action="delete" data-id="${s.id}">Delete</button>
             </div>
           </td>
@@ -128,19 +119,29 @@
       .join("");
   }
 
+  function openEditModal(sub) {
+    el("editId").value = sub.id;
+    el("editName").value = sub.name;
+    el("editCollegeId").value = sub.college_id;
+    el("editEmail").value = sub.email;
+    el("editTitle").value = sub.title;
+    el("editDescription").value = sub.description || "";
+    el("editMsg").textContent = "";
+    el("editModal").style.display = "flex";
+  }
+
+  function closeEditModal() {
+    el("editModal").style.display = "none";
+  }
+
   async function handleAction(action, id, button) {
+    if (action === "edit") {
+      const sub = currentSubmissions.find((item) => item.id == id);
+      if (sub) openEditModal(sub);
+      return;
+    }
     if (action === "delete" && !confirm("Permanently delete this submission and its uploaded files?")) return;
-    if (action === "reject") {
-      const note = prompt("Optional note for the participant (visible to admins only):", "");
-      if (note === null) return; // cancelled
-      await fetch(`/admin/api/submissions/${id}/reject`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note }),
-      });
-    } else if (action === "approve") {
-      await fetch(`/admin/api/submissions/${id}/approve`, { method: "POST" });
-    } else if (action === "delete") {
+    if (action === "delete") {
       await fetch(`/admin/api/submissions/${id}`, { method: "DELETE" });
     }
     loadStats();
@@ -156,12 +157,7 @@
       state.page = 1;
       loadSubmissions();
     });
-    el("filterStatus").addEventListener("change", (e) => {
-      state.status = e.target.value;
-      state.page = 1;
-      loadSubmissions();
-    });
-    el("searchBox").addEventListener("input", (e) => {
+    el("filterSearch").addEventListener("input", (e) => {
       clearTimeout(searchDebounce);
       searchDebounce = setTimeout(() => {
         state.q = e.target.value;
@@ -192,5 +188,37 @@
         if (btn.dataset.tab === "devmail") loadDevOutbox();
       });
     });
+
+    const closeBtn = el("closeEditModal");
+    if (closeBtn) closeBtn.addEventListener("click", closeEditModal);
+
+    const editForm = el("editForm");
+    if (editForm) {
+      editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = el("editId").value;
+        const payload = {
+          name: el("editName").value.trim(),
+          college_id: el("editCollegeId").value.trim(),
+          email: el("editEmail").value.trim(),
+          title: el("editTitle").value.trim(),
+          description: el("editDescription").value.trim(),
+        };
+
+        const res = await fetch(`/admin/api/submissions/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const resData = await res.json();
+        if (!resData.ok) {
+          el("editMsg").textContent = resData.error || "Failed to save changes.";
+        } else {
+          closeEditModal();
+          loadStats();
+          loadSubmissions();
+        }
+      });
+    }
   });
 })();
