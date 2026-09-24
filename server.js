@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 require("./db/database"); // ensures schema exists before anything else runs
@@ -12,8 +13,36 @@ const adminEntriesRouter = require("./routes/adminEntries");
 const voteRouter = require("./routes/vote");
 const adminRouter = require("./routes/admin");
 
+// Auto-seed or update admin credentials if configured in environment
+function seedAdminIfConfigured() {
+  const name = process.env.ADMIN_NAME;
+  const email = (process.env.ADMIN_EMAIL || "").toLowerCase();
+  const passwordPlain = process.env.ADMIN_PASSWORD;
+  if (!name || !email || !passwordPlain) return;
+
+  try {
+    const { hashPassword } = require("./lib/password");
+    const db = require("./db/database");
+    const passwordHash = hashPassword(passwordPlain);
+    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+    if (existing) {
+      db.prepare(
+        "UPDATE users SET name = ?, role = 'admin', password_hash = ?, is_verified = 1 WHERE id = ?"
+      ).run(name, passwordHash, existing.id);
+    } else {
+      db.prepare(
+        "INSERT INTO users (name, email, role, password_hash, is_verified) VALUES (?, ?, 'admin', ?, 1)"
+      ).run(name, email, passwordHash);
+    }
+  } catch (err) {
+    console.warn("Could not auto-seed admin account:", err.message);
+  }
+}
+seedAdminIfConfigured();
+
 const app = express();
 
+app.set("trust proxy", 1);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -25,6 +54,12 @@ app.use(cookieParser());
 // public/css/style.css, public/js/main.js and public/img/*.svg are
 // reachable at /css/style.css, /js/main.js and /img/*.svg.
 app.use(express.static(path.join(__dirname, "public")));
+
+// Ensure uploads folder exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Uploaded participant files. These are served as plain static files so the
 // browser can show images inline, stream video with range requests, and
@@ -66,9 +101,13 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Ganpati Agman site running at http://localhost:${PORT}`);
-  if (!process.env.SMTP_HOST) {
-    console.log("SMTP is not configured — running in DEV MAIL MODE (OTP codes are logged here).");
-  }
-});
+if (require.main === module) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Ganpati Agman site running at http://localhost:${PORT}`);
+    if (!process.env.SMTP_HOST) {
+      console.log("SMTP is not configured — running in DEV MAIL MODE (OTP codes are logged here).");
+    }
+  });
+}
+
+module.exports = app;

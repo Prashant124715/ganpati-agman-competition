@@ -9,9 +9,10 @@ const fs = require("fs");
 const Database = require("better-sqlite3");
 
 const DATA_DIR = path.join(__dirname, "..", "data");
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const DB_PATH = process.env.DATABASE_PATH || path.join(DATA_DIR, "ganpati-agman.db");
+const dirToEnsure = path.dirname(DB_PATH);
+if (!fs.existsSync(dirToEnsure)) fs.mkdirSync(dirToEnsure, { recursive: true });
 
-const DB_PATH = path.join(DATA_DIR, "ganpati-agman.db");
 const db = new Database(DB_PATH);
 
 db.pragma("journal_mode = WAL");
